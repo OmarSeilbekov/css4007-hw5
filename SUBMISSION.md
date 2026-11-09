@@ -193,6 +193,10 @@ the status result was `operational`; with other snapshots it stopped (below). Lo
 * Setup, run commands, Python version: [README.md](README.md). Exact versions: [requirements.txt](requirements.txt).
 * Memory location and reset: README §4 (`python -m helpdesk.cli --reset`).
 * CI: [.github/workflows/tests.yml](.github/workflows/tests.yml) — on every push runs `pytest` on Ubuntu and Windows with Python 3.11 and 3.13 and smoke-runs all scenarios with `--model fake`. No API key is used.
+  **Status of CI on my fork:** the workflow is valid and was triggered on push, but GitHub did not start
+  any job: every job shows *"The job was not started because your account is locked due to a billing issue."*
+  This is an account restriction, not a test failure. Locally on Windows (Python 3.11) `python -m pytest -q`
+  gives **29 passed**; the same tests can be run by anyone with the README commands.
 * All agent tests use the **FAKE** model (`FakeHelpdeskModel`) or the runaway `AlwaysCallsTool` model; the real-model demonstration is separate (`--model openai`).
 
 | Test | What it would catch |
