@@ -1,0 +1,206 @@
+{
+  "scenario": "S11",
+  "title": "Persist and recall after restart",
+  "part": 3,
+  "status_profile": "normal",
+  "model": "FAKE rule-based model (helpdesk/fake_model.py) — not an LLM",
+  "reset_before": true,
+  "process_restarts": 1,
+  "commands": [
+    "python -m helpdesk.scenarios --worker S11 --segment 0 --model fake --storage local-storage/scenarios/fake/S11 --ticket-dir outputs/fake/tickets",
+    "python -m helpdesk.scenarios --worker S11 --segment 1 --model fake --storage local-storage/scenarios/fake/S11 --ticket-dir outputs/fake/tickets"
+  ],
+  "turns": [
+    {
+      "user_id": "demo-user-a",
+      "thread_id": "restart-a",
+      "status_profile": "normal",
+      "model": "FAKE rule-based model (helpdesk/fake_model.py) — not an LLM",
+      "user_message": "Please remember that I prefer replies in Kazakh. My issue is Wi-Fi. I enabled it and tried reconnecting, but it still fails.",
+      "sources": {
+        "conversation_memory": {
+          "checkpoint_thread_id": "restart-a",
+          "prior_messages_loaded": 0,
+          "prior_user_messages": [],
+          "current_topic_before": null
+        },
+        "user_memory": {
+          "user_id": "demo-user-a",
+          "preferences_loaded": {}
+        },
+        "reference_file": [
+          "data/helpdesk.json:GUIDE-WIFI"
+        ]
+      },
+      "steps": [
+        {
+          "node": "load_memory",
+          "update": {
+            "user_preferences": {},
+            "current_topic": "wifi",
+            "tool_rounds": 0,
+            "loop_limit_reached": false
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_tool_request",
+                "tool_calls": [
+                  {
+                    "name": "save_user_preference",
+                    "args": {
+                      "language": "Kazakh"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "node": "tools",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "tool_result",
+                "name": "save_user_preference",
+                "content": {
+                  "saved": true,
+                  "user_id": "demo-user-a",
+                  "language": "Kazakh",
+                  "storage": "user_memory.sqlite"
+                }
+              }
+            ],
+            "tool_rounds": 1
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_tool_request",
+                "tool_calls": [
+                  {
+                    "name": "find_instructions",
+                    "args": {
+                      "topic": "wifi"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "node": "tools",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "tool_result",
+                "name": "find_instructions",
+                "content": {
+                  "found": true,
+                  "topic": "wifi",
+                  "instruction_id": "GUIDE-WIFI",
+                  "title": "Connect to the practice campus network",
+                  "steps": [
+                    "Check that Wi-Fi is enabled and airplane mode is off.",
+                    "Select the fictional Campus-Demo network.",
+                    "If connection fails, forget the saved network and try connecting again.",
+                    "If the problem remains, check the service status before preparing a ticket."
+                  ],
+                  "source": "data/helpdesk.json"
+                }
+              }
+            ],
+            "tool_rounds": 2
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_answer",
+                "content": "Жауаптарды қазақ тілінде беру туралы қалауыңызды сақтадым.\nЖергілікті нұсқаулық (GUIDE-WIFI):\n1. Check that Wi-Fi is enabled and airplane mode is off.\n2. Select the fictional Campus-Demo network.\n3. If connection fails, forget the saved network and try connecting again.\n4. If the problem remains, check the service status before preparing a ticket.\nYou said you already tried: Enabled Wi-Fi; Tried reconnecting. If it still fails, I can check the service status or prepare a local ticket draft."
+              }
+            ]
+          }
+        }
+      ],
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "tool_rounds": 2,
+      "current_topic_after": "wifi",
+      "user_memory_after": {
+        "language": "Kazakh"
+      },
+      "reply": "Жауаптарды қазақ тілінде беру туралы қалауыңызды сақтадым.\nЖергілікті нұсқаулық (GUIDE-WIFI):\n1. Check that Wi-Fi is enabled and airplane mode is off.\n2. Select the fictional Campus-Demo network.\n3. If connection fails, forget the saved network and try connecting again.\n4. If the problem remains, check the service status before preparing a ticket.\nYou said you already tried: Enabled Wi-Fi; Tried reconnecting. If it still fails, I can check the service status or prepare a local ticket draft.",
+      "pid": 1234,
+      "process_segment": 0
+    },
+    {
+      "user_id": "demo-user-a",
+      "thread_id": "restart-a",
+      "status_profile": "normal",
+      "model": "FAKE rule-based model (helpdesk/fake_model.py) — not an LLM",
+      "user_message": "Which problem and steps did we discuss?",
+      "sources": {
+        "conversation_memory": {
+          "checkpoint_thread_id": "restart-a",
+          "prior_messages_loaded": 6,
+          "prior_user_messages": [
+            "Please remember that I prefer replies in Kazakh. My issue is Wi-Fi. I enabled it and tried reconnecting, but it still fails."
+          ],
+          "current_topic_before": "wifi"
+        },
+        "user_memory": {
+          "user_id": "demo-user-a",
+          "preferences_loaded": {
+            "language": "Kazakh"
+          }
+        },
+        "reference_file": []
+      },
+      "steps": [
+        {
+          "node": "load_memory",
+          "update": {
+            "user_preferences": {
+              "language": "Kazakh"
+            },
+            "current_topic": "wifi",
+            "tool_rounds": 0,
+            "loop_limit_reached": false
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_answer",
+                "content": "Біз Wi-Fi мәселесін талқыладық. Сіз жасап көрген қадамдар: Enabled Wi-Fi; Tried reconnecting.\nWe discussed a Wi-Fi problem. Steps you already tried: Enabled Wi-Fi; Tried reconnecting."
+              }
+            ]
+          }
+        }
+      ],
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "tool_rounds": 0,
+      "current_topic_after": "wifi",
+      "user_memory_after": {
+        "language": "Kazakh"
+      },
+      "reply": "Біз Wi-Fi мәселесін талқыладық. Сіз жасап көрген қадамдар: Enabled Wi-Fi; Tried reconnecting.\nWe discussed a Wi-Fi problem. Steps you already tried: Enabled Wi-Fi; Tried reconnecting.",
+      "pid": 1242,
+      "process_segment": 1
+    }
+  ]
+}

@@ -1,0 +1,178 @@
+{
+  "scenario": "S09",
+  "title": "Missing ticket details",
+  "part": 2,
+  "status_profile": "normal",
+  "model": "FAKE rule-based model (helpdesk/fake_model.py) — not an LLM",
+  "reset_before": true,
+  "process_restarts": 0,
+  "commands": [
+    "python -m helpdesk.scenarios --worker S09 --segment 0 --model fake --storage local-storage/scenarios/fake/S09 --ticket-dir outputs/fake/tickets"
+  ],
+  "turns": [
+    {
+      "user_id": "demo-user-a",
+      "thread_id": "s09",
+      "status_profile": "normal",
+      "model": "FAKE rule-based model (helpdesk/fake_model.py) — not an LLM",
+      "user_message": "Prepare a support ticket.",
+      "sources": {
+        "conversation_memory": {
+          "checkpoint_thread_id": "s09",
+          "prior_messages_loaded": 0,
+          "prior_user_messages": [],
+          "current_topic_before": null
+        },
+        "user_memory": {
+          "user_id": "demo-user-a",
+          "preferences_loaded": {}
+        },
+        "reference_file": []
+      },
+      "steps": [
+        {
+          "node": "load_memory",
+          "update": {
+            "user_preferences": {},
+            "current_topic": null,
+            "tool_rounds": 0,
+            "loop_limit_reached": false
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_answer",
+                "content": "What problem are you having, and what have you already tried?"
+              }
+            ]
+          }
+        }
+      ],
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "tool_rounds": 0,
+      "current_topic_after": null,
+      "user_memory_after": {},
+      "reply": "What problem are you having, and what have you already tried?",
+      "pid": 1207,
+      "process_segment": 0
+    },
+    {
+      "user_id": "demo-user-a",
+      "thread_id": "s09",
+      "status_profile": "normal",
+      "model": "FAKE rule-based model (helpdesk/fake_model.py) — not an LLM",
+      "user_message": "The issue is Wi-Fi. I enabled it and tried reconnecting, but it still fails.",
+      "sources": {
+        "conversation_memory": {
+          "checkpoint_thread_id": "s09",
+          "prior_messages_loaded": 2,
+          "prior_user_messages": [
+            "Prepare a support ticket."
+          ],
+          "current_topic_before": null
+        },
+        "user_memory": {
+          "user_id": "demo-user-a",
+          "preferences_loaded": {}
+        },
+        "reference_file": []
+      },
+      "steps": [
+        {
+          "node": "load_memory",
+          "update": {
+            "user_preferences": {},
+            "current_topic": "wifi",
+            "tool_rounds": 0,
+            "loop_limit_reached": false
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_tool_request",
+                "tool_calls": [
+                  {
+                    "name": "prepare_ticket",
+                    "args": {
+                      "category": "wifi",
+                      "summary": "Wi-Fi problem still fails after the steps tried.",
+                      "steps_tried": [
+                        "Enabled Wi-Fi",
+                        "Tried reconnecting"
+                      ],
+                      "service_status": "not_checked"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "node": "tools",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "tool_result",
+                "name": "prepare_ticket",
+                "content": {
+                  "created": true,
+                  "sent": false,
+                  "ticket_id": "DRAFT-20261109-082016-1c7d03",
+                  "file": "outputs/fake/tickets/DRAFT-20261109-082016-1c7d03.json",
+                  "ticket": {
+                    "ticket_id": "DRAFT-20261109-082016-1c7d03",
+                    "status": "draft",
+                    "user_id": "demo-user-a",
+                    "thread_id": "s09",
+                    "category": "wifi",
+                    "summary": "Wi-Fi problem still fails after the steps tried.",
+                    "steps_tried": [
+                      "Enabled Wi-Fi",
+                      "Tried reconnecting"
+                    ],
+                    "service_status": "not_checked",
+                    "status_profile": "normal",
+                    "reference_ids": [
+                      "GUIDE-WIFI"
+                    ]
+                  },
+                  "message": "Local draft saved. Nothing was sent to a helpdesk."
+                }
+              }
+            ],
+            "tool_rounds": 1
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_answer",
+                "content": "Service status: not checked. I prepared a local ticket draft DRAFT-20261109-082016-1c7d03 (file: outputs/fake/tickets/DRAFT-20261109-082016-1c7d03.json) with the steps you tried: Enabled Wi-Fi; Tried reconnecting. Nothing has been sent."
+              }
+            ]
+          }
+        }
+      ],
+      "ticket_files": [
+        "outputs/fake/tickets/DRAFT-20261109-082016-1c7d03.json"
+      ],
+      "loop_limit_reached": false,
+      "tool_rounds": 1,
+      "current_topic_after": "wifi",
+      "user_memory_after": {},
+      "reply": "Service status: not checked. I prepared a local ticket draft DRAFT-20261109-082016-1c7d03 (file: outputs/fake/tickets/DRAFT-20261109-082016-1c7d03.json) with the steps you tried: Enabled Wi-Fi; Tried reconnecting. Nothing has been sent.",
+      "pid": 1207,
+      "process_segment": 0
+    }
+  ]
+}

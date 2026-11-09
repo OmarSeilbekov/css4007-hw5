@@ -1,0 +1,103 @@
+{
+  "scenario": "S14",
+  "title": "Password recovery outage",
+  "part": 2,
+  "status_profile": "recovery_outage",
+  "model": "FAKE rule-based model (helpdesk/fake_model.py) — not an LLM",
+  "reset_before": true,
+  "process_restarts": 0,
+  "commands": [
+    "python -m helpdesk.scenarios --worker S14 --segment 0 --model fake --storage local-storage/scenarios/fake/S14 --ticket-dir outputs/fake/tickets"
+  ],
+  "turns": [
+    {
+      "user_id": "demo-user-a",
+      "thread_id": "s14",
+      "status_profile": "recovery_outage",
+      "model": "FAKE rule-based model (helpdesk/fake_model.py) — not an LLM",
+      "user_message": "My password recovery page is unavailable. Check the service status. Is there a known problem?",
+      "sources": {
+        "conversation_memory": {
+          "checkpoint_thread_id": "s14",
+          "prior_messages_loaded": 0,
+          "prior_user_messages": [],
+          "current_topic_before": null
+        },
+        "user_memory": {
+          "user_id": "demo-user-a",
+          "preferences_loaded": {}
+        },
+        "reference_file": [
+          "data/service_status.json:recovery_outage/account_recovery"
+        ]
+      },
+      "steps": [
+        {
+          "node": "load_memory",
+          "update": {
+            "user_preferences": {},
+            "current_topic": "password",
+            "tool_rounds": 0,
+            "loop_limit_reached": false
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_tool_request",
+                "tool_calls": [
+                  {
+                    "name": "check_service_status",
+                    "args": {
+                      "service": "account_recovery"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "node": "tools",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "tool_result",
+                "name": "check_service_status",
+                "content": {
+                  "service": "account_recovery",
+                  "status": "outage",
+                  "message": "The demo account-recovery service is unavailable. The fixture gives no repair time.",
+                  "status_profile": "recovery_outage",
+                  "source": "data/service_status.json"
+                }
+              }
+            ],
+            "tool_rounds": 1
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_answer",
+                "content": "Yes. The demo status source reports an outage of account_recovery: The demo account-recovery service is unavailable. The fixture gives no repair time. I have no repair time to give."
+              }
+            ]
+          }
+        }
+      ],
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "tool_rounds": 1,
+      "current_topic_after": "password",
+      "user_memory_after": {},
+      "reply": "Yes. The demo status source reports an outage of account_recovery: The demo account-recovery service is unavailable. The fixture gives no repair time. I have no repair time to give.",
+      "pid": 1279,
+      "process_segment": 0
+    }
+  ]
+}

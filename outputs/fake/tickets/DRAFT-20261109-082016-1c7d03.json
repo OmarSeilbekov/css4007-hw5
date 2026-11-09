@@ -1,0 +1,19 @@
+{
+  "ticket": {
+    "ticket_id": "DRAFT-20261109-082016-1c7d03",
+    "status": "draft",
+    "user_id": "demo-user-a",
+    "thread_id": "s09",
+    "category": "wifi",
+    "summary": "Wi-Fi problem still fails after the steps tried.",
+    "steps_tried": [
+      "Enabled Wi-Fi",
+      "Tried reconnecting"
+    ],
+    "service_status": "not_checked",
+    "status_profile": "normal",
+    "reference_ids": [
+      "GUIDE-WIFI"
+    ]
+  }
+}

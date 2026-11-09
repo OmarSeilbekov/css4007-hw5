@@ -1,0 +1,61 @@
+{
+  "scenario": "S01",
+  "title": "Simple Wi-Fi route",
+  "part": 1,
+  "graph_variant": "original",
+  "status_profile": "normal",
+  "user_id": "demo-user-a",
+  "thread_id": "s01",
+  "command": "python -m helpdesk.part1 --variant original \"I cannot connect to Wi-Fi.\"",
+  "model": "none (Part 1 has no LLM)",
+  "route": [
+    "START",
+    "read_request",
+    "wifi_help",
+    "END"
+  ],
+  "steps": [
+    {
+      "node": "START",
+      "update": {},
+      "state_after": {
+        "message": "I cannot connect to Wi-Fi."
+      }
+    },
+    {
+      "node": "read_request",
+      "update": {
+        "category": "wifi"
+      },
+      "state_after": {
+        "message": "I cannot connect to Wi-Fi.",
+        "category": "wifi"
+      }
+    },
+    {
+      "node": "wifi_help",
+      "update": {
+        "reply": "Connect to the practice campus network [GUIDE-WIFI]\n  1. Check that Wi-Fi is enabled and airplane mode is off.\n  2. Select the fictional Campus-Demo network.\n  3. If connection fails, forget the saved network and try connecting again.\n  4. If the problem remains, check the service status before preparing a ticket."
+      },
+      "state_after": {
+        "message": "I cannot connect to Wi-Fi.",
+        "category": "wifi",
+        "reply": "Connect to the practice campus network [GUIDE-WIFI]\n  1. Check that Wi-Fi is enabled and airplane mode is off.\n  2. Select the fictional Campus-Demo network.\n  3. If connection fails, forget the saved network and try connecting again.\n  4. If the problem remains, check the service status before preparing a ticket."
+      }
+    },
+    {
+      "node": "END",
+      "update": {},
+      "state_after": {
+        "message": "I cannot connect to Wi-Fi.",
+        "category": "wifi",
+        "reply": "Connect to the practice campus network [GUIDE-WIFI]\n  1. Check that Wi-Fi is enabled and airplane mode is off.\n  2. Select the fictional Campus-Demo network.\n  3. If connection fails, forget the saved network and try connecting again.\n  4. If the problem remains, check the service status before preparing a ticket."
+      }
+    }
+  ],
+  "final_state": {
+    "message": "I cannot connect to Wi-Fi.",
+    "category": "wifi",
+    "reply": "Connect to the practice campus network [GUIDE-WIFI]\n  1. Check that Wi-Fi is enabled and airplane mode is off.\n  2. Select the fictional Campus-Demo network.\n  3. If connection fails, forget the saved network and try connecting again.\n  4. If the problem remains, check the service status before preparing a ticket."
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "scenario": "S10",
+  "title": "Use the current conversation",
+  "part": 3,
+  "status_profile": "normal",
+  "model": "FAKE rule-based model (helpdesk/fake_model.py) — not an LLM",
+  "reset_before": true,
+  "process_restarts": 0,
+  "commands": [
+    "python -m helpdesk.scenarios --worker S10 --segment 0 --model fake --storage local-storage/scenarios/fake/S10 --ticket-dir outputs/fake/tickets"
+  ],
+  "turns": [
+    {
+      "user_id": "demo-user-a",
+      "thread_id": "s10",
+      "status_profile": "normal",
+      "model": "FAKE rule-based model (helpdesk/fake_model.py) — not an LLM",
+      "user_message": "I cannot connect to Wi-Fi. I enabled it and forgot the saved network, but reconnecting failed.",
+      "sources": {
+        "conversation_memory": {
+          "checkpoint_thread_id": "s10",
+          "prior_messages_loaded": 0,
+          "prior_user_messages": [],
+          "current_topic_before": null
+        },
+        "user_memory": {
+          "user_id": "demo-user-a",
+          "preferences_loaded": {}
+        },
+        "reference_file": [
+          "data/helpdesk.json:GUIDE-WIFI"
+        ]
+      },
+      "steps": [
+        {
+          "node": "load_memory",
+          "update": {
+            "user_preferences": {},
+            "current_topic": "wifi",
+            "tool_rounds": 0,
+            "loop_limit_reached": false
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_tool_request",
+                "tool_calls": [
+                  {
+                    "name": "find_instructions",
+                    "args": {
+                      "topic": "wifi"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "node": "tools",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "tool_result",
+                "name": "find_instructions",
+                "content": {
+                  "found": true,
+                  "topic": "wifi",
+                  "instruction_id": "GUIDE-WIFI",
+                  "title": "Connect to the practice campus network",
+                  "steps": [
+                    "Check that Wi-Fi is enabled and airplane mode is off.",
+                    "Select the fictional Campus-Demo network.",
+                    "If connection fails, forget the saved network and try connecting again.",
+                    "If the problem remains, check the service status before preparing a ticket."
+                  ],
+                  "source": "data/helpdesk.json"
+                }
+              }
+            ],
+            "tool_rounds": 1
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_answer",
+                "content": "Here are the instructions from the local guide [GUIDE-WIFI] — Connect to the practice campus network:\n1. Check that Wi-Fi is enabled and airplane mode is off.\n2. Select the fictional Campus-Demo network.\n3. If connection fails, forget the saved network and try connecting again.\n4. If the problem remains, check the service status before preparing a ticket.\nYou said you already tried: Enabled Wi-Fi; Forgot the saved network; Tried reconnecting. If it still fails, I can check the service status or prepare a local ticket draft."
+              }
+            ]
+          }
+        }
+      ],
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "tool_rounds": 1,
+      "current_topic_after": "wifi",
+      "user_memory_after": {},
+      "reply": "Here are the instructions from the local guide [GUIDE-WIFI] — Connect to the practice campus network:\n1. Check that Wi-Fi is enabled and airplane mode is off.\n2. Select the fictional Campus-Demo network.\n3. If connection fails, forget the saved network and try connecting again.\n4. If the problem remains, check the service status before preparing a ticket.\nYou said you already tried: Enabled Wi-Fi; Forgot the saved network; Tried reconnecting. If it still fails, I can check the service status or prepare a local ticket draft.",
+      "pid": 1221,
+      "process_segment": 0
+    },
+    {
+      "user_id": "demo-user-a",
+      "thread_id": "s10",
+      "status_profile": "normal",
+      "model": "FAKE rule-based model (helpdesk/fake_model.py) — not an LLM",
+      "user_message": "Which steps did I already try?",
+      "sources": {
+        "conversation_memory": {
+          "checkpoint_thread_id": "s10",
+          "prior_messages_loaded": 4,
+          "prior_user_messages": [
+            "I cannot connect to Wi-Fi. I enabled it and forgot the saved network, but reconnecting failed."
+          ],
+          "current_topic_before": "wifi"
+        },
+        "user_memory": {
+          "user_id": "demo-user-a",
+          "preferences_loaded": {}
+        },
+        "reference_file": []
+      },
+      "steps": [
+        {
+          "node": "load_memory",
+          "update": {
+            "user_preferences": {},
+            "current_topic": "wifi",
+            "tool_rounds": 0,
+            "loop_limit_reached": false
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_answer",
+                "content": "We discussed a Wi-Fi problem. Steps you already tried: Enabled Wi-Fi; Forgot the saved network; Tried reconnecting."
+              }
+            ]
+          }
+        }
+      ],
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "tool_rounds": 0,
+      "current_topic_after": "wifi",
+      "user_memory_after": {},
+      "reply": "We discussed a Wi-Fi problem. Steps you already tried: Enabled Wi-Fi; Forgot the saved network; Tried reconnecting.",
+      "pid": 1221,
+      "process_segment": 0
+    }
+  ]
+}

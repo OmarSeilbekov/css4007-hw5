@@ -1,0 +1,61 @@
+{
+  "scenario": "S03",
+  "title": "Unsupported request",
+  "part": 1,
+  "graph_variant": "original",
+  "status_profile": "normal",
+  "user_id": "demo-user-a",
+  "thread_id": "s03",
+  "command": "python -m helpdesk.part1 --variant original \"My laptop screen is broken.\"",
+  "model": "none (Part 1 has no LLM)",
+  "route": [
+    "START",
+    "read_request",
+    "other_help",
+    "END"
+  ],
+  "steps": [
+    {
+      "node": "START",
+      "update": {},
+      "state_after": {
+        "message": "My laptop screen is broken."
+      }
+    },
+    {
+      "node": "read_request",
+      "update": {
+        "category": "other"
+      },
+      "state_after": {
+        "message": "My laptop screen is broken.",
+        "category": "other"
+      }
+    },
+    {
+      "node": "other_help",
+      "update": {
+        "reply": "I can only help with Wi-Fi or password problems. Does your problem concern Wi-Fi or a password?"
+      },
+      "state_after": {
+        "message": "My laptop screen is broken.",
+        "category": "other",
+        "reply": "I can only help with Wi-Fi or password problems. Does your problem concern Wi-Fi or a password?"
+      }
+    },
+    {
+      "node": "END",
+      "update": {},
+      "state_after": {
+        "message": "My laptop screen is broken.",
+        "category": "other",
+        "reply": "I can only help with Wi-Fi or password problems. Does your problem concern Wi-Fi or a password?"
+      }
+    }
+  ],
+  "final_state": {
+    "message": "My laptop screen is broken.",
+    "category": "other",
+    "reply": "I can only help with Wi-Fi or password problems. Does your problem concern Wi-Fi or a password?"
+  }
+}
