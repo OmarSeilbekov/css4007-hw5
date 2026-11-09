@@ -8,7 +8,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+    fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest]
         python-version: ["3.11", "3.13"]
     env:
       # No API key in CI: tests use the clearly labelled FAKE model only.

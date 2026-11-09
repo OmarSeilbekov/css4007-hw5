@@ -11,6 +11,15 @@ DATA_DIR = REPO_ROOT / "data"
 OUTPUTS_DIR = REPO_ROOT / "outputs"
 
 
+def force_utf8_stdio() -> None:
+    """Windows consoles/pipes default to cp1251/cp1252, which cannot print Kazakh text."""
+    import sys
+
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
+
 def _load(name: str) -> dict:
     with open(DATA_DIR / name, encoding="utf-8") as f:
         return json.load(f)

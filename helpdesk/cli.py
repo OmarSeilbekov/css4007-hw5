@@ -43,6 +43,7 @@ def print_trace(trace: dict) -> None:
 
 
 def main() -> None:
+    data.force_utf8_stdio()
     p = argparse.ArgumentParser(description="HW5 LangGraph IT helpdesk (fictional data)")
     p.add_argument("--user", default="demo-user-a", help="invented user identifier")
     p.add_argument("--thread", default="default", help="conversation / thread identifier")

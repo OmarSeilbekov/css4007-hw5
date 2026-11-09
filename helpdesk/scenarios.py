@@ -102,7 +102,8 @@ def run_agent_scenario(sc: dict, model: str, log_dir: Path) -> dict:
         cmd = [sys.executable, "-m", "helpdesk.scenarios", "--worker", sc["id"], "--segment", str(i),
                "--model", model, "--storage", str(storage), "--ticket-dir", str(ticket_dir)]
         commands.append(" ".join(["python"] + [_rel(c) for c in cmd[1:]]))
-        proc = subprocess.run(cmd, capture_output=True, text=True, cwd=data.REPO_ROOT, env=os.environ.copy())
+        proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8",
+                              cwd=data.REPO_ROOT, env={**os.environ, "PYTHONIOENCODING": "utf-8"})
         if proc.returncode != 0:
             raise RuntimeError(f"{sc['id']} segment {i} failed:\n{proc.stderr}")
         payload = proc.stdout.split("@@TRACES@@", 1)[1]
@@ -162,6 +163,7 @@ def _agent_markdown(log: dict) -> str:
 
 
 def main() -> None:
+    data.force_utf8_stdio()
     p = argparse.ArgumentParser()
     p.add_argument("--model", choices=["openai", "fake"], default="openai")
     p.add_argument("--only", nargs="*", help="scenario ids, e.g. S06 S07")

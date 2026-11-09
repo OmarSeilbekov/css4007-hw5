@@ -1,0 +1,262 @@
+{
+  "scenario": "S06",
+  "title": "Instructions then local ticket",
+  "part": 2,
+  "status_profile": "normal",
+  "model": "OpenAI / gpt-4.1-mini",
+  "reset_before": true,
+  "process_restarts": 0,
+  "commands": [
+    "python -m helpdesk.scenarios --worker S06 --segment 0 --model openai --storage local-storage\\scenarios\\openai\\S06 --ticket-dir outputs\\openai\\tickets"
+  ],
+  "turns": [
+    {
+      "user_id": "demo-user-a",
+      "thread_id": "s06",
+      "status_profile": "normal",
+      "model": "OpenAI / gpt-4.1-mini",
+      "user_message": "Show me the Wi-Fi troubleshooting steps.",
+      "sources": {
+        "conversation_memory": {
+          "checkpoint_thread_id": "s06",
+          "prior_messages_loaded": 0,
+          "prior_user_messages": [],
+          "current_topic_before": null
+        },
+        "user_memory": {
+          "user_id": "demo-user-a",
+          "preferences_loaded": {}
+        },
+        "reference_file": [
+          "data/helpdesk.json:GUIDE-WIFI"
+        ]
+      },
+      "steps": [
+        {
+          "node": "load_memory",
+          "update": {
+            "user_preferences": {},
+            "current_topic": "wifi",
+            "tool_rounds": 0,
+            "loop_limit_reached": false
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_tool_request",
+                "tool_calls": [
+                  {
+                    "name": "find_instructions",
+                    "args": {
+                      "topic": "wifi"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "node": "tools",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "tool_result",
+                "name": "find_instructions",
+                "content": {
+                  "found": true,
+                  "topic": "wifi",
+                  "instruction_id": "GUIDE-WIFI",
+                  "title": "Connect to the practice campus network",
+                  "steps": [
+                    "Check that Wi-Fi is enabled and airplane mode is off.",
+                    "Select the fictional Campus-Demo network.",
+                    "If connection fails, forget the saved network and try connecting again.",
+                    "If the problem remains, check the service status before preparing a ticket."
+                  ],
+                  "source": "data/helpdesk.json"
+                }
+              }
+            ],
+            "tool_rounds": 1
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_answer",
+                "content": "Here are the Wi-Fi troubleshooting steps:\n\n1. Check that Wi-Fi is enabled and airplane mode is off.\n2. Select the fictional Campus-Demo network.\n3. If connection fails, forget the saved network and try connecting again.\n4. If the problem remains, check the service status before preparing a ticket.\n\nLet me know if you want help with any specific step or further assistance."
+              }
+            ]
+          }
+        }
+      ],
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "tool_rounds": 1,
+      "current_topic_after": "wifi",
+      "user_memory_after": {},
+      "reply": "Here are the Wi-Fi troubleshooting steps:\n\n1. Check that Wi-Fi is enabled and airplane mode is off.\n2. Select the fictional Campus-Demo network.\n3. If connection fails, forget the saved network and try connecting again.\n4. If the problem remains, check the service status before preparing a ticket.\n\nLet me know if you want help with any specific step or further assistance.",
+      "pid": 52956,
+      "process_segment": 0
+    },
+    {
+      "user_id": "demo-user-a",
+      "thread_id": "s06",
+      "status_profile": "normal",
+      "model": "OpenAI / gpt-4.1-mini",
+      "user_message": "I enabled Wi-Fi and forgot the saved network, but Campus-Demo still will not connect. Check whether Wi-Fi is down. If it is operating, prepare a ticket about this problem.",
+      "sources": {
+        "conversation_memory": {
+          "checkpoint_thread_id": "s06",
+          "prior_messages_loaded": 4,
+          "prior_user_messages": [
+            "Show me the Wi-Fi troubleshooting steps."
+          ],
+          "current_topic_before": "wifi"
+        },
+        "user_memory": {
+          "user_id": "demo-user-a",
+          "preferences_loaded": {}
+        },
+        "reference_file": [
+          "data/service_status.json:normal/wifi"
+        ]
+      },
+      "steps": [
+        {
+          "node": "load_memory",
+          "update": {
+            "user_preferences": {},
+            "current_topic": "wifi",
+            "tool_rounds": 0,
+            "loop_limit_reached": false
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_tool_request",
+                "tool_calls": [
+                  {
+                    "name": "check_service_status",
+                    "args": {
+                      "service": "wifi"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "node": "tools",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "tool_result",
+                "name": "check_service_status",
+                "content": {
+                  "service": "wifi",
+                  "status": "operational",
+                  "message": "The demo Wi-Fi service has no reported outage.",
+                  "status_profile": "normal",
+                  "source": "data/service_status.json"
+                }
+              }
+            ],
+            "tool_rounds": 1
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_tool_request",
+                "tool_calls": [
+                  {
+                    "name": "prepare_ticket",
+                    "args": {
+                      "category": "wifi",
+                      "summary": "Unable to connect to the Campus-Demo Wi-Fi network despite enabling Wi-Fi and forgetting the saved network.",
+                      "steps_tried": [
+                        "Enabled Wi-Fi",
+                        "Forgot the saved network"
+                      ],
+                      "service_status": "operational"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "node": "tools",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "tool_result",
+                "name": "prepare_ticket",
+                "content": {
+                  "created": true,
+                  "sent": false,
+                  "ticket_id": "DRAFT-20261109-101717-da8035",
+                  "file": "outputs\\openai\\tickets\\DRAFT-20261109-101717-da8035.json",
+                  "ticket": {
+                    "ticket_id": "DRAFT-20261109-101717-da8035",
+                    "status": "draft",
+                    "user_id": "demo-user-a",
+                    "thread_id": "s06",
+                    "category": "wifi",
+                    "summary": "Unable to connect to the Campus-Demo Wi-Fi network despite enabling Wi-Fi and forgetting the saved network.",
+                    "steps_tried": [
+                      "Enabled Wi-Fi",
+                      "Forgot the saved network"
+                    ],
+                    "service_status": "operational",
+                    "status_profile": "normal",
+                    "reference_ids": [
+                      "GUIDE-WIFI"
+                    ]
+                  },
+                  "message": "Local draft saved. Nothing was sent to a helpdesk."
+                }
+              }
+            ],
+            "tool_rounds": 2
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_answer",
+                "content": "The Wi-Fi service is operational. I have prepared a local ticket draft for your issue: you are unable to connect to the Campus-Demo Wi-Fi network despite enabling Wi-Fi and forgetting the saved network. The ticket file is named DRAFT-20261109-101717-da8035.json. Let me know if you want to add anything else or need further help."
+              }
+            ]
+          }
+        }
+      ],
+      "ticket_files": [
+        "outputs\\openai\\tickets\\DRAFT-20261109-101717-da8035.json"
+      ],
+      "loop_limit_reached": false,
+      "tool_rounds": 2,
+      "current_topic_after": "wifi",
+      "user_memory_after": {},
+      "reply": "The Wi-Fi service is operational. I have prepared a local ticket draft for your issue: you are unable to connect to the Campus-Demo Wi-Fi network despite enabling Wi-Fi and forgetting the saved network. The ticket file is named DRAFT-20261109-101717-da8035.json. Let me know if you want to add anything else or need further help.",
+      "pid": 52956,
+      "process_segment": 0
+    }
+  ]
+}

@@ -41,7 +41,7 @@ Scope: Wi-Fi troubleshooting, password recovery guidance, service status lookup,
 Rules:
 - Use find_instructions for instructions; never make up steps.
 - Use check_service_status before saying whether a service is down. 'unknown' means the status could not be determined: it is neither operational nor a confirmed outage. Never invent repair times.
-- Follow the user's conditions exactly (e.g. "if it is operating, prepare a ticket": only prepare it when the status is operational).
+- Follow the user's conditions exactly (e.g. "if it is operating, prepare a ticket": only prepare it when the status is operational). If the status is unknown, say you cannot confirm it is operating and ask whether the user wants a draft that records that the status could not be checked.
 - prepare_ticket needs a problem description and the steps the user said they tried. If either is missing, ask the user; do not invent details. Tickets are local drafts; never say a ticket was sent. Include the ticket file name in your answer.
 - Never ask for or store passwords, recovery codes or API keys.
 - Use the earlier messages in this conversation to understand references such as "that" or "what we discussed".
@@ -76,8 +76,14 @@ def build_agent_graph(model, tools, user_memory: UserMemory, checkpointer=None):
 
     def agent(state: AgentState) -> dict:
         prefs = state.get("user_preferences") or {}
+        language_rule = (
+            f"LANGUAGE RULE: this user's saved preference is {prefs['language']}. Write your ENTIRE reply "
+            f"in {prefs['language']}, even if the user writes in another language and even when you only "
+            "answer a question about the preference itself.\n\n"
+            if prefs.get("language") else ""
+        )
         system = SystemMessage(
-            SYSTEM_PROMPT.format(
+            language_rule + SYSTEM_PROMPT.format(
                 user_id=state["user_id"],
                 status_profile=state.get("status_profile", "normal"),
                 topic=state.get("current_topic") or "none yet",

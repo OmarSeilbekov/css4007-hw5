@@ -141,7 +141,7 @@
         "language": "Kazakh"
       },
       "reply": "Жауаптарды қазақ тілінде беру туралы қалауыңызды сақтадым.\nЖергілікті нұсқаулық (GUIDE-WIFI):\n1. Check that Wi-Fi is enabled and airplane mode is off.\n2. Select the fictional Campus-Demo network.\n3. If connection fails, forget the saved network and try connecting again.\n4. If the problem remains, check the service status before preparing a ticket.\nYou said you already tried: Enabled Wi-Fi; Tried reconnecting. If it still fails, I can check the service status or prepare a local ticket draft.",
-      "pid": 1234,
+      "pid": 308,
       "process_segment": 0
     },
     {
@@ -199,7 +199,7 @@
         "language": "Kazakh"
       },
       "reply": "Біз Wi-Fi мәселесін талқыладық. Сіз жасап көрген қадамдар: Enabled Wi-Fi; Tried reconnecting.\nWe discussed a Wi-Fi problem. Steps you already tried: Enabled Wi-Fi; Tried reconnecting.",
-      "pid": 1242,
+      "pid": 316,
       "process_segment": 1
     }
   ]

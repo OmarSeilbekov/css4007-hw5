@@ -2,10 +2,12 @@
 import json
 import tempfile
 
+from . import data
 from .tools import check_service_status, find_instructions, prepare_ticket
 
 
 def main() -> None:
+    data.force_utf8_stdio()
     calls = [
         ("find_instructions('wifi')", lambda: find_instructions("wifi")),
         ("find_instructions('printer')", lambda: find_instructions("printer")),

@@ -1,8 +1,9 @@
 # HW5 — My LangGraph helpdesk
 
-> **Before submitting:** run `python -m helpdesk.scenarios --model openai` with your key and
-> replace every `⟨REAL RUN⟩` marker below with what your real-model logs in `outputs/openai/` show.
-> Logs in `outputs/fake/` come from a clearly labelled FAKE rule-based model, not an LLM.
+> **Logs.** `outputs/openai/` — real runs with **OpenAI gpt-4.1-mini** (run on Windows, Python 3.11).
+> `outputs/openai/before-prompt-fix/` — the first real S08/S12 runs that behaved wrongly (kept as evidence).
+> `outputs/fake/` — a clearly labelled FAKE rule-based model used for tests/CI, **not an LLM**.
+> `outputs/part1/` — Part 1 (no model).
 
 ## Part 1 — How the graph works
 
@@ -96,7 +97,7 @@ takes the same route.
 ## Part 2 — Model and tools
 
 Code: `helpdesk/tools.py`, `helpdesk/agent.py`.
-**Model and provider:** ⟨REAL RUN⟩ OpenAI, `MODEL_NAME=...` (from `.env`) via `langchain-openai`.
+**Model and provider:** OpenAI `gpt-4.1-mini` (`MODEL_NAME` in `.env`), temperature 0, via `langchain-openai`.
 Tests/CI use `FakeHelpdeskModel` (`helpdesk/fake_model.py`), a deterministic rule set labelled FAKE.
 
 ### The loop
@@ -135,11 +136,19 @@ and no file is written.
 
 ### A run that uses several tools
 
-S06 turn 2 ([fake log](outputs/fake/S06.md), ⟨REAL RUN⟩ [real log](outputs/openai/S06.md)):
-model requests `check_service_status({"service": "wifi"})` → result `operational` → model requests
-`prepare_ticket({"category": "wifi", "steps_tried": ["Enabled Wi-Fi", "Forgot the saved network"], "service_status": "operational", ...})`
-→ result `{"created": true, "file": "outputs/.../DRAFT-....json"}` → answer with the file name and “Nothing has been sent.”
-Turn 1 of the same scenario used `find_instructions` (GUIDE-WIFI).
+Actual run with gpt-4.1-mini, S06 ([outputs/openai/S06.md](outputs/openai/S06.md)):
+
+| Step | Node | What happened |
+| --- | --- | --- |
+| turn 1 | agent → tools | model requests `find_instructions({"topic": "wifi"})` → GUIDE-WIFI steps from `data/helpdesk.json` |
+| turn 2, 1 | agent | model requests `check_service_status({"service": "wifi"})` |
+| turn 2, 2 | tools | result `{"status": "operational", "status_profile": "normal"}` |
+| turn 2, 3 | agent | model requests `prepare_ticket({"category": "wifi", "summary": "Unable to connect to the Campus-Demo Wi-Fi network despite enabling Wi-Fi and forgetting the saved network.", "steps_tried": ["Enabled Wi-Fi", "Forgot the saved network"], "service_status": "operational"})` |
+| turn 2, 4 | tools | result `{"created": true, "sent": false, "file": "outputs/openai/tickets/DRAFT-20261109-101717-da8035.json"}` |
+| turn 2, 5 | agent | answer: “The Wi-Fi service is operational. I have prepared a local ticket draft … The ticket file is named DRAFT-20261109-101717-da8035.json.” |
+
+The ticket uses only the two steps the user stated. The model chose `prepare_ticket` **because**
+the status result was `operational`; with other snapshots it stopped (below). Loop limit not reached (2 rounds).
 
 ### Same request, three snapshots
 
@@ -172,16 +181,18 @@ Turn 1 of the same scenario used `find_instructions` (GUIDE-WIFI).
 
 | Situation | Command used | Log file | What happened |
 | --- | --- | --- | --- |
-| Refer to an earlier message | `python -m helpdesk.scenarios --model openai --only S10` | [S10](outputs/fake/S10.md) / ⟨REAL RUN⟩ `outputs/openai/S10.md` | turn 2 loaded 4 prior messages from checkpoint `s10`; answered “Enabled Wi-Fi; Forgot the saved network; Tried reconnecting” without tools |
-| Close, restart and resume | `... --only S11` (2 processes, same storage) | [S11](outputs/fake/S11.md) | new pid; checkpoint `restart-a` gave 6 prior messages; recalled Wi-Fi + steps (in Kazakh, as saved) |
-| Same user, new conversation | `... --only S12` | [S12](outputs/fake/S12.md) | thread `preference-a2` had 0 prior messages, user memory gave `{"language": "Kazakh"}` |
-| Different user | `... --only S13` | [S13](outputs/fake/S13.md) | demo-user-b: user memory `{}`, 0 prior messages → “No preferred language… no previous problem recorded” |
+| Situation | Command used | Log file | What happened (real model) |
+| --- | --- | --- | --- |
+| Refer to an earlier message | `python -m helpdesk.scenarios --model openai --only S10` | [openai/S10](outputs/openai/S10.md) | turn 2 read 4 prior messages from checkpoint `s10` (conversation memory), no tools: “You mentioned that you enabled Wi-Fi and forgot the saved network, but reconnecting still failed.” |
+| Close, restart and resume | `... --only S11` (2 processes, same storage) | [openai/S11](outputs/openai/S11.md) | pid 65612 → pid 71088; checkpoint `restart-a` gave 8 prior messages; user memory gave Kazakh; recalled the Wi-Fi problem and both steps in Kazakh |
+| Same user, new conversation | `... --only S12` | [openai/S12](outputs/openai/S12.md) | new pid, thread `preference-a2`: 0 prior messages (conversation memory empty), user memory `{"language": "Kazakh"}`; answered in Kazakh (after the prompt fix, see below) |
+| Different user | `... --only S13` | [openai/S13](outputs/openai/S13.md) | demo-user-b: user memory `{}`, thread `isolation-b` 0 prior messages → “You have not told me a preferred language or mentioned any previous problem” |
 
 ## Part 4 — Running and checking my work
 
 * Setup, run commands, Python version: [README.md](README.md). Exact versions: [requirements.txt](requirements.txt).
 * Memory location and reset: README §4 (`python -m helpdesk.cli --reset`).
-* CI: [.github/workflows/tests.yml](.github/workflows/tests.yml) — on every push runs `pytest` on Python 3.11 and 3.13 and smoke-runs all scenarios with `--model fake`. No API key is used.
+* CI: [.github/workflows/tests.yml](.github/workflows/tests.yml) — on every push runs `pytest` on Ubuntu and Windows with Python 3.11 and 3.13 and smoke-runs all scenarios with `--model fake`. No API key is used.
 * All agent tests use the **FAKE** model (`FakeHelpdeskModel`) or the runaway `AlwaysCallsTool` model; the real-model demonstration is separate (`--model openai`).
 
 | Test | What it would catch |
@@ -203,29 +214,34 @@ Turn 1 of the same scenario used `find_instructions` (GUIDE-WIFI).
 * **Storage:** SQLite for both kinds of memory — one file each, no server, survives restarts, and LangGraph ships `SqliteSaver` and `SqliteStore`. Keeping them in separate files makes the two kinds of memory visibly separate.
 * **Model:** OpenAI through `langchain-openai` (supplied adapter). Any tool-calling chat model can be passed to `build_agent_graph`.
 * **Own tool executor** instead of the prebuilt `ToolNode`, so the "model requests / my code executes" split is explicit and errors are returned to the model as tool results.
-* **Limitations:** the fake model is a keyword rule set — it only understands the scenario phrasings, and its Kazakh output is template-based (reference steps stay in English). With a real LLM, wording and tool order can vary between runs, and the model could still mis-follow a condition; the ticket tool guards against missing details and secrets, but cannot check that the steps are truly the user's. `current_topic` is set by keywords only. Status is a fixed snapshot per run.
+* **Bug found when running on Windows:** `test_preference_survives_restart_in_new_thread` failed on Windows (Python 3.11) with `CalledProcessError`. Cause: the child process printed the Kazakh reply to a pipe using the Windows default encoding (cp1251/cp1252), which raised `UnicodeEncodeError`. On Linux (UTF-8) it passed, so CI did not catch it. Fix: `data.force_utf8_stdio()` at the start of every entry point, and the test/scenario runner decode child output as UTF-8. Lesson: a test that runs a real subprocess catches environment problems that in-process tests miss; CI only on Linux is not enough for a "someone else can run it" requirement (a `windows-latest` CI job would have caught it).
+* **Limitations:** the fake model is a keyword rule set — it only understands the scenario phrasings, and its Kazakh output is template-based (reference steps stay in English). With the real LLM, wording and optional tool calls vary between runs (S09/S10), and following the saved language depends on the prompt: in the first S12 run the preference was loaded but ignored, so this can still fail occasionally; the ticket tool guards against missing details and secrets, but cannot check that the steps are truly the user's. `current_topic` is set by keywords only. Status is a fixed snapshot per run.
 
 ## Supplied scenarios — my actual results
 
-Command for all: `python -m helpdesk.scenarios --model openai` (real) or `--model fake`.
-Logs: Part 1 in `outputs/part1/`, others in `outputs/fake/` (FAKE model) and ⟨REAL RUN⟩ `outputs/openai/`.
+Command: `python -m helpdesk.scenarios --model openai` (all) or `--only Sxx`. Model: OpenAI gpt-4.1-mini.
+S06, S07, S09–S11, S13, S14 come from the first full run; S08 and S12 were re-run after the prompt fix
+described below (the first versions are in `outputs/openai/before-prompt-fix/`).
+The same scenarios with the FAKE model are in `outputs/fake/` (used by CI).
 
 | Scenario | Command or manual steps | Log file | What happened / what I changed |
 | --- | --- | --- | --- |
 | S01 — Simple Wi-Fi route | `python -m helpdesk.part1 "I cannot connect to Wi-Fi."` | [part1/S01](outputs/part1/S01.md) | read_request → wifi_help, GUIDE-WIFI reply; as predicted |
-| S02 — Case-insensitive password route | `python -m helpdesk.part1 "I forgot my PASSWORD."` | [part1/S02](outputs/part1/S02.md) | password_help; works because text is lower-cased first |
+| S02 — Case-insensitive password route | `python -m helpdesk.part1 "I forgot my PASSWORD."` | [part1/S02](outputs/part1/S02.md) | password_help; works because the text is lower-cased first |
 | S03 — Unsupported request | `python -m helpdesk.part1 "My laptop screen is broken."` | [part1/S03](outputs/part1/S03.md) | other_help asks Wi-Fi or password |
-| S04 — Two topics before the graph change | `python -m helpdesk.part1 --variant original "My Wi-Fi password does not work."` | [part1/S04](outputs/part1/S04.md) | wifi_help (rule order); this motivated the change |
-| S05 — Two topics after adding clarification | `python -m helpdesk.part1 --variant with_clarification "..."` | [part1/S05](outputs/part1/S05.md) | new clarify_problem node asks which problem first |
-| S06 — Instructions then local ticket | `--only S06` | [fake/S06](outputs/fake/S06.md) | find_instructions; then check_service_status=operational → prepare_ticket with the user's two steps; file in `outputs/<model>/tickets/` |
-| S07 — The same request during a Wi-Fi outage | `--only S07` | [fake/S07](outputs/fake/S07.md) | status=outage → no ticket, no repair time |
-| S08 — Status source unavailable | `--only S08` | [fake/S08](outputs/fake/S08.md) | status=unknown → not treated as operating; asks whether to draft a ticket |
-| S09 — Missing ticket details | `--only S09` | [fake/S09](outputs/fake/S09.md) | turn 1: question, no tool; turn 2: ticket with `service_status=not_checked` |
-| S10 — Use the current conversation | `--only S10` | [fake/S10](outputs/fake/S10.md) | steps recalled from checkpointed messages |
-| S11 — Persist and recall after restart | `--only S11` | [fake/S11](outputs/fake/S11.md) | 2 processes (different pids); recall from checkpoint, reply in saved language |
-| S12 — Preference across threads without replay | `--only S12` | [fake/S12](outputs/fake/S12.md) | new thread empty, user memory gives Kazakh |
-| S13 — Do not share memory between users | `--only S13` | [fake/S13](outputs/fake/S13.md) | demo-user-b sees no preference and no problem |
-| S14 — Password recovery outage | `--only S14` | [fake/S14](outputs/fake/S14.md) | check_service_status(account_recovery)=outage reported, no repair time |
+| S04 — Two topics before the graph change | `python -m helpdesk.part1 --variant original "My Wi-Fi password does not work."` | [part1/S04](outputs/part1/S04.md) | wifi_help because the Wi-Fi rule is checked first; this motivated the change |
+| S05 — Two topics after adding clarification | `python -m helpdesk.part1 --variant with_clarification "My Wi-Fi password does not work."` | [part1/S05](outputs/part1/S05.md) | new clarify_problem node asks which problem to solve first |
+| S06 — Instructions then local ticket | `--only S06` | [openai/S06](outputs/openai/S06.md) | find_instructions; then check_service_status=operational → prepare_ticket with the user's 2 steps; [ticket file](outputs/openai/tickets/DRAFT-20261109-101717-da8035.json) named in reply. As expected. |
+| S07 — Same request during a Wi-Fi outage | `--only S07` | [openai/S07](outputs/openai/S07.md) | status=outage → “Since it is not operating, I will not prepare a ticket”; no repair time invented. As expected. |
+| S08 — Status source unavailable | `--only S08` | [openai/S08](outputs/openai/S08.md), [before fix](outputs/openai/before-prompt-fix/S08.md) | **First run:** status=unknown, correctly no ticket, but it did not offer a draft. **Change:** prompt rule “if status is unknown, say you cannot confirm it and ask whether to draft a ticket recording that”. **After:** “I cannot confirm whether the Wi-Fi service is operating … Would you like me to prepare a ticket that records the Wi-Fi status could not be checked?” Remaining flaw: it also asks for a problem description although the user already gave one. |
+| S09 — Missing ticket details | `--only S09` | [openai/S09](outputs/openai/S09.md) | turn 1: asked for problem and steps, no tool call; turn 2: also checked status on its own initiative (operational), then [ticket](outputs/openai/tickets/DRAFT-20261109-101736-7303b5.json) with “Enabled Wi-Fi; Tried reconnecting”. Nothing invented. |
+| S10 — Use the current conversation | `--only S10` | [openai/S10](outputs/openai/S10.md) | recalled the steps from checkpointed messages. Turn 1 checked status instead of showing instructions — acceptable but different from the fake model. |
+| S11 — Persist and recall after restart | `--only S11` | [openai/S11](outputs/openai/S11.md) | saved Kazakh, two processes; after restart recalled problem + steps from the checkpoint, in Kazakh |
+| S12 — Preference across threads without replay | `--only S12` | [openai/S12](outputs/openai/S12.md), [before fix](outputs/openai/before-prompt-fix/S12.md) | **First run:** user memory correctly loaded `{"language": "Kazakh"}` in the new thread, but the model answered in **English** — memory worked, instruction-following failed. **Change:** when a language is saved, `agent.py` puts a `LANGUAGE RULE` line at the very top of the system prompt. **After:** answered fully in Kazakh (“Сіз маған қазақ тілінде жауап беруді сұрадыңыз…”) and listed the scope. |
+| S13 — Do not share memory between users | `--only S13` | [openai/S13](outputs/openai/S13.md) | demo-user-b: empty user memory and empty thread → no preference or problem reported |
+| S14 — Password recovery outage | `--only S14` | [openai/S14](outputs/openai/S14.md) | check_service_status(account_recovery)=outage; “no estimated repair time”; offered a draft |
 
-⟨REAL RUN⟩ After the real-model run, note for each of S06–S14 whether the LLM behaved the same
-way as above and, if not, what you changed (for example, the system prompt in `agent.py`).
+**What I learned from the real runs.** The graph, tools and memory behaved the same as with the fake
+model in every scenario; the differences were in how the LLM *used* the information it was given
+(S12 language, S08 follow-up question) and in which optional tools it chose (S09, S10). Fixes were made
+in the system prompt, not in the graph, and I re-ran the affected scenarios to check them.

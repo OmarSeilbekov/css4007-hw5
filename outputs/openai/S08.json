@@ -1,0 +1,103 @@
+{
+  "scenario": "S08",
+  "title": "Status source unavailable",
+  "part": 2,
+  "status_profile": "status_unavailable",
+  "model": "OpenAI / gpt-4.1-mini",
+  "reset_before": true,
+  "process_restarts": 0,
+  "commands": [
+    "python -m helpdesk.scenarios --worker S08 --segment 0 --model openai --storage local-storage\\scenarios\\openai\\S08 --ticket-dir outputs\\openai\\tickets"
+  ],
+  "turns": [
+    {
+      "user_id": "demo-user-a",
+      "thread_id": "s08",
+      "status_profile": "status_unavailable",
+      "model": "OpenAI / gpt-4.1-mini",
+      "user_message": "Check whether Wi-Fi is down. If it is operating, prepare a ticket. I already enabled Wi-Fi and reconnected, with no success.",
+      "sources": {
+        "conversation_memory": {
+          "checkpoint_thread_id": "s08",
+          "prior_messages_loaded": 0,
+          "prior_user_messages": [],
+          "current_topic_before": null
+        },
+        "user_memory": {
+          "user_id": "demo-user-a",
+          "preferences_loaded": {}
+        },
+        "reference_file": [
+          "data/service_status.json:status_unavailable/wifi"
+        ]
+      },
+      "steps": [
+        {
+          "node": "load_memory",
+          "update": {
+            "user_preferences": {},
+            "current_topic": "wifi",
+            "tool_rounds": 0,
+            "loop_limit_reached": false
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_tool_request",
+                "tool_calls": [
+                  {
+                    "name": "check_service_status",
+                    "args": {
+                      "service": "wifi"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "node": "tools",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "tool_result",
+                "name": "check_service_status",
+                "content": {
+                  "service": "wifi",
+                  "status": "unknown",
+                  "message": "The demo Wi-Fi status source is unavailable.",
+                  "status_profile": "status_unavailable",
+                  "source": "data/service_status.json"
+                }
+              }
+            ],
+            "tool_rounds": 1
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_answer",
+                "content": "I cannot confirm whether the Wi-Fi service is operating because the status source is currently unavailable. Would you like me to prepare a ticket that records the Wi-Fi status could not be checked? If yes, please provide a brief description of the problem you are experiencing."
+              }
+            ]
+          }
+        }
+      ],
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "tool_rounds": 1,
+      "current_topic_after": "wifi",
+      "user_memory_after": {},
+      "reply": "I cannot confirm whether the Wi-Fi service is operating because the status source is currently unavailable. Would you like me to prepare a ticket that records the Wi-Fi status could not be checked? If yes, please provide a brief description of the problem you are experiencing.",
+      "pid": 65696,
+      "process_segment": 0
+    }
+  ]
+}

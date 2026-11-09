@@ -1,0 +1,244 @@
+{
+  "scenario": "S11",
+  "title": "Persist and recall after restart",
+  "part": 3,
+  "status_profile": "normal",
+  "model": "OpenAI / gpt-4.1-mini",
+  "reset_before": true,
+  "process_restarts": 1,
+  "commands": [
+    "python -m helpdesk.scenarios --worker S11 --segment 0 --model openai --storage local-storage\\scenarios\\openai\\S11 --ticket-dir outputs\\openai\\tickets",
+    "python -m helpdesk.scenarios --worker S11 --segment 1 --model openai --storage local-storage\\scenarios\\openai\\S11 --ticket-dir outputs\\openai\\tickets"
+  ],
+  "turns": [
+    {
+      "user_id": "demo-user-a",
+      "thread_id": "restart-a",
+      "status_profile": "normal",
+      "model": "OpenAI / gpt-4.1-mini",
+      "user_message": "Please remember that I prefer replies in Kazakh. My issue is Wi-Fi. I enabled it and tried reconnecting, but it still fails.",
+      "sources": {
+        "conversation_memory": {
+          "checkpoint_thread_id": "restart-a",
+          "prior_messages_loaded": 0,
+          "prior_user_messages": [],
+          "current_topic_before": null
+        },
+        "user_memory": {
+          "user_id": "demo-user-a",
+          "preferences_loaded": {}
+        },
+        "reference_file": [
+          "data/service_status.json:normal/wifi",
+          "data/helpdesk.json:GUIDE-WIFI"
+        ]
+      },
+      "steps": [
+        {
+          "node": "load_memory",
+          "update": {
+            "user_preferences": {},
+            "current_topic": "wifi",
+            "tool_rounds": 0,
+            "loop_limit_reached": false
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_tool_request",
+                "tool_calls": [
+                  {
+                    "name": "save_user_preference",
+                    "args": {
+                      "language": "Kazakh"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "node": "tools",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "tool_result",
+                "name": "save_user_preference",
+                "content": {
+                  "saved": true,
+                  "user_id": "demo-user-a",
+                  "language": "Kazakh",
+                  "storage": "user_memory.sqlite"
+                }
+              }
+            ],
+            "tool_rounds": 1
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_tool_request",
+                "tool_calls": [
+                  {
+                    "name": "check_service_status",
+                    "args": {
+                      "service": "wifi"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "node": "tools",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "tool_result",
+                "name": "check_service_status",
+                "content": {
+                  "service": "wifi",
+                  "status": "operational",
+                  "message": "The demo Wi-Fi service has no reported outage.",
+                  "status_profile": "normal",
+                  "source": "data/service_status.json"
+                }
+              }
+            ],
+            "tool_rounds": 2
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_tool_request",
+                "tool_calls": [
+                  {
+                    "name": "find_instructions",
+                    "args": {
+                      "topic": "wifi"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "node": "tools",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "tool_result",
+                "name": "find_instructions",
+                "content": {
+                  "found": true,
+                  "topic": "wifi",
+                  "instruction_id": "GUIDE-WIFI",
+                  "title": "Connect to the practice campus network",
+                  "steps": [
+                    "Check that Wi-Fi is enabled and airplane mode is off.",
+                    "Select the fictional Campus-Demo network.",
+                    "If connection fails, forget the saved network and try connecting again.",
+                    "If the problem remains, check the service status before preparing a ticket."
+                  ],
+                  "source": "data/helpdesk.json"
+                }
+              }
+            ],
+            "tool_rounds": 3
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_answer",
+                "content": "Wi-Fi мәселесін шешу үшін келесі қадамдарды орындаңыз:\n1. Wi-Fi қосулы және ұшақ режимі өшірілгенін тексеріңіз.\n2. Fictional Campus-Demo желісін таңдаңыз.\n3. Егер қосылу сәтсіз болса, сақталған желіні ұмытып, қайта қосылуға тырысыңыз.\n4. Егер мәселе шешілмесе, қызметтің жұмыс күйін тексеріңіз.\n\nСіз Wi-Fi қосып, қайта қосылуға тырыстыңыз дедіңіз. Сіз сақталған желіні ұмытып, қайта қосылуға тырыстыңыз ба? Немесе басқа қандай қадамдар жасадыңыз? Мәселені толық сипаттап, жасаған қадамдарыңызды айтыңыз, сонда мен сізге көмек көрсету үшін билет дайындай аламын."
+              }
+            ]
+          }
+        }
+      ],
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "tool_rounds": 3,
+      "current_topic_after": "wifi",
+      "user_memory_after": {
+        "language": "Kazakh"
+      },
+      "reply": "Wi-Fi мәселесін шешу үшін келесі қадамдарды орындаңыз:\n1. Wi-Fi қосулы және ұшақ режимі өшірілгенін тексеріңіз.\n2. Fictional Campus-Demo желісін таңдаңыз.\n3. Егер қосылу сәтсіз болса, сақталған желіні ұмытып, қайта қосылуға тырысыңыз.\n4. Егер мәселе шешілмесе, қызметтің жұмыс күйін тексеріңіз.\n\nСіз Wi-Fi қосып, қайта қосылуға тырыстыңыз дедіңіз. Сіз сақталған желіні ұмытып, қайта қосылуға тырыстыңыз ба? Немесе басқа қандай қадамдар жасадыңыз? Мәселені толық сипаттап, жасаған қадамдарыңызды айтыңыз, сонда мен сізге көмек көрсету үшін билет дайындай аламын.",
+      "pid": 65612,
+      "process_segment": 0
+    },
+    {
+      "user_id": "demo-user-a",
+      "thread_id": "restart-a",
+      "status_profile": "normal",
+      "model": "OpenAI / gpt-4.1-mini",
+      "user_message": "Which problem and steps did we discuss?",
+      "sources": {
+        "conversation_memory": {
+          "checkpoint_thread_id": "restart-a",
+          "prior_messages_loaded": 8,
+          "prior_user_messages": [
+            "Please remember that I prefer replies in Kazakh. My issue is Wi-Fi. I enabled it and tried reconnecting, but it still fails."
+          ],
+          "current_topic_before": "wifi"
+        },
+        "user_memory": {
+          "user_id": "demo-user-a",
+          "preferences_loaded": {
+            "language": "Kazakh"
+          }
+        },
+        "reference_file": []
+      },
+      "steps": [
+        {
+          "node": "load_memory",
+          "update": {
+            "user_preferences": {
+              "language": "Kazakh"
+            },
+            "current_topic": "wifi",
+            "tool_rounds": 0,
+            "loop_limit_reached": false
+          }
+        },
+        {
+          "node": "agent",
+          "update": {
+            "messages(appended)": [
+              {
+                "type": "model_answer",
+                "content": "Біз талқылаған мәселе: Wi-Fi қосылғанымен, қайта қосылуға тырысқан кезде байланыс сәтсіз болуда.\n\nСіз жасаған қадамдар:\n- Wi-Fi қосу.\n- Қайта қосылуға тырысу.\n\nЕгер сіз басқа да қадамдар жасасаңыз, мысалы, сақталған желіні ұмытып қайта қосылу сияқты, оны айтыңыз. Егер осы ақпарат жеткілікті болса және Wi-Fi қызметі қалыпты жұмыс істеп тұрса, мен сіз үшін көмек билетін дайындай аламын."
+              }
+            ]
+          }
+        }
+      ],
+      "ticket_files": [],
+      "loop_limit_reached": false,
+      "tool_rounds": 0,
+      "current_topic_after": "wifi",
+      "user_memory_after": {
+        "language": "Kazakh"
+      },
+      "reply": "Біз талқылаған мәселе: Wi-Fi қосылғанымен, қайта қосылуға тырысқан кезде байланыс сәтсіз болуда.\n\nСіз жасаған қадамдар:\n- Wi-Fi қосу.\n- Қайта қосылуға тырысу.\n\nЕгер сіз басқа да қадамдар жасасаңыз, мысалы, сақталған желіні ұмытып қайта қосылу сияқты, оны айтыңыз. Егер осы ақпарат жеткілікті болса және Wi-Fi қызметі қалыпты жұмыс істеп тұрса, мен сіз үшін көмек билетін дайындай аламын.",
+      "pid": 71088,
+      "process_segment": 1
+    }
+  ]
+}

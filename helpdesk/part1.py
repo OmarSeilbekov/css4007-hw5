@@ -137,6 +137,7 @@ def mermaid(variant: GraphVariant = "original") -> str:
 
 
 def main() -> None:
+    data.force_utf8_stdio()
     p = argparse.ArgumentParser(description="Part 1 rule-based helpdesk graph (no LLM)")
     p.add_argument("message", nargs="?", help="message to route")
     p.add_argument("--variant", choices=["original", "with_clarification"], default="original")

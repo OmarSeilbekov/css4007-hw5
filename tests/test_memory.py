@@ -11,7 +11,7 @@ def _run_cli(storage, user, thread, message):
     proc = subprocess.run(
         [sys.executable, "-m", "helpdesk.cli", "--model", "fake", "--storage", str(storage),
          "--user", user, "--thread", thread, "--json", "-m", message],
-        capture_output=True, text=True, cwd=REPO_ROOT, check=True)
+        capture_output=True, text=True, encoding="utf-8", cwd=REPO_ROOT, check=True)
     out = proc.stdout
     return json.loads(out[out.index("\n{") + 1:])
 
